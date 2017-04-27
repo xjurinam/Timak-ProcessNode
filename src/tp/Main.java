@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,12 @@ public class Main {
             //Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Node", "node", "mysql");
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/broker_node", "node", "mysql");
             connection.setSchema("Node");
+            // DOCASNE NASTAVOVANIE DATABAZY TREBA NESKOR OPRAVIT
+            Statement stmt = connection.createStatement();
+            String sql = "update merchants set is_active=0;";
+            stmt.execute(sql);
+            sql = "update products set is_active=0;";
+            stmt.execute(sql);
             
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setAutomaticReconnect(true);
