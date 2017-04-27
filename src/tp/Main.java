@@ -35,7 +35,7 @@ public class Main {
             logger.addHandler(fh);
             // Pripojenie do databazy
             //Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Node", "node", "mysql");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Node", "root", "mysql");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/broker_node", "node", "mysql");
             connection.setSchema("Node");
             
             MqttConnectOptions connOpts = new MqttConnectOptions();

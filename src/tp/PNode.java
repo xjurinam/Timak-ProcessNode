@@ -75,7 +75,7 @@ public class PNode implements IMqttNode{
         message.setRetained(retain);
         message.setQos(2);
         this.client.publish(topic, message);
-        System.out.println("S: "+topic+" : "+payload);
+        System.out.println((char)27 + "[34mS: "+topic+" : "+payload+ (char)27 + "[0m");
     }
     
     public void start_subscribe(Worker worker) throws MqttException{
@@ -101,7 +101,7 @@ public class PNode implements IMqttNode{
         token = this.client.subscribe(IMqttNode.subBuy, QoS, new IMqttMessageListener(){
             @Override
             public void messageArrived(String topic, MqttMessage m) throws Exception {
-                System.out.println("A: "+topic+" : "+m.toString());
+                System.out.println((char)27+"[35mA: "+topic+" : "+m.toString()+ (char)27 + "[0m");
                 worker.executeBuyOrder(topic, m.toString());
             }
         });
@@ -110,7 +110,7 @@ public class PNode implements IMqttNode{
         token = this.client.subscribe(IMqttNode.subBuyMultiple, QoS, new IMqttMessageListener(){
             @Override
             public void messageArrived(String topic, MqttMessage m) throws Exception {
-                System.out.println("A: "+topic+" : "+m.toString());
+                System.out.println((char)27+"[35mA: "+topic+" : "+m.toString()+ (char)27 + "[0m");
                 worker.executeMultipleBuyOrder(topic, m.toString());
             }
         });
@@ -119,7 +119,7 @@ public class PNode implements IMqttNode{
         token = this.client.subscribe(IMqttNode.subAvalabilityTopic, QoS, new IMqttMessageListener(){
             @Override
             public void messageArrived(String topic, MqttMessage m) throws Exception {
-                System.out.println("A: "+topic+" : "+m.toString());
+                System.out.println((char)27+"[35mA: "+topic+" : "+m.toString()+ (char)27 + "[0m");
                 worker.executeAvailability(m.toString());
             }
         });
@@ -128,7 +128,7 @@ public class PNode implements IMqttNode{
         token = this.client.subscribe(IMqttNode.subBankResponseTopic, QoS, new IMqttMessageListener(){
             @Override
             public void messageArrived(String topic, MqttMessage m) throws Exception {
-                System.out.println("A: "+topic+" : "+m.toString());
+                System.out.println((char)27+"[35mA: "+topic+" : "+m.toString()+ (char)27 + "[0m");
                 worker.exexuteBankResponse(m.toString());
             }
         });
@@ -137,7 +137,7 @@ public class PNode implements IMqttNode{
         token = this.client.subscribe(IMqttNode.subHistoryTopic, QoS, new IMqttMessageListener(){
             @Override
             public void messageArrived(String topic, MqttMessage m) throws Exception {
-                System.out.println("A: "+topic+" : "+m.toString());
+                System.out.println((char)27+"[35mA: "+topic+" : "+m.toString()+ (char)27 + "[0m");
                 worker.sendHistory(topic, m.toString());
             }
         });

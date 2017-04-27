@@ -6,7 +6,6 @@
 package tp;
 
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -372,12 +371,13 @@ public class Worker implements IMqttNode{
                 doPayment(order2);
             if(success == 0){
                 contactUserWithResponse("Product unavailable!", success, order2);
+                contactShopWithResponse("Payment dispose", success, order2);
                 synchronized(this) {
                     this.orders.remove(order2);
                 }
             }
         }catch(Exception ex){
-            logger.log(Level.SEVERE, ex.toString());
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -428,7 +428,7 @@ public class Worker implements IMqttNode{
             System.out.println("Send payment to bank, order "+ order.getOrderId() +"  ... [OK]");
         } catch (MqttException | SQLException ex) {
             System.out.println("Send payment to bank, order "+ order.getOrderId() +"  ... [FAIL]");
-            logger.log(Level.SEVERE, ex.toString());
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -454,7 +454,7 @@ public class Worker implements IMqttNode{
                 success = 1;
             synchronized(this) {
                 for(Order order : orders){
-                    if(order.getUuid().equals("paymentId")){
+                    if(order.getUuid().equals(paymentId)){
                         order2 = order;
                         break;
                     }
@@ -462,12 +462,13 @@ public class Worker implements IMqttNode{
             }
             System.out.println("Received payment from bank, order "+ order2.getOrderId() +"  ... [OK]");
             contactUserWithResponse("Payment "+status, success, order2);
+            contactShopWithResponse("Payment "+status, success, order2);
             synchronized(this) {
                 this.orders.remove(order2);
             }
         }catch(Exception ex){
             System.out.println("Received payment from bank, order "+ order2.getOrderId() +"  ... [FAIL]");
-            logger.log(Level.SEVERE, ex.toString());
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -488,24 +489,49 @@ public class Worker implements IMqttNode{
             System.out.println("Contacting client with response: order "+ order.getOrderId() +"  ... [OK]");
         } catch (MqttException ex) {
             System.out.println("Contacting client with response: order "+ order.getOrderId() +"  ... [FAIL]");
-            logger.log(Level.SEVERE, ex.toString());
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
+    /**
+     * Funkcia posle spravu obchodnikovi s vysledkom objednavky.
+     * 
+     * @param message popis stavu objednavky
+     * @param success stav spracovania objednavky a to 1 pri uspesnom kupeni inac 0
+     * @param order objednavku, ktorej sa to tyka
+     */
     public void contactShopWithResponse(String message, int success, Order order){
         try(Statement stmt = this.connection.createStatement()) {
             String sql = "";
             for(Product product : order.getProducts()){
-                sql = "SELECT * FROM products as p"
-                        + "INNER JOIN shops as s ON s.id_shop=p.id_shop "
-                        + "WHERE ";
-                product.getId();
+                if(product.getState() != 0 ){
+                    sql = "SELECT m.name as name "
+                            + "FROM products as p "
+                            + "INNER JOIN merchants as m ON m.id_shop=p.id_shop "
+                            + "WHERE p.id_product=" + product.getId() + ";";
+                    ResultSet rs = stmt.executeQuery(sql);
+                    String name = "";
+                    while(rs.next()){
+                        name = rs.getString("name");
+                    }
+                    JsonBuilderFactory factory = Json.createBuilderFactory(null);
+                    JsonObject object = factory.createObjectBuilder()
+                            .add("messageType", "00000101")
+                            .add("payload", Json.createObjectBuilder()
+                                    .add("reservationUuid", product.getReservationUuid())
+                                    .add("orderId", order.getOrderId())
+                                    .add("mail", order.getMail())
+                                    .add("success", success)
+                                    .add("message", message))
+                            .build();
+                    this.pnode.sendMessage(IMqttNode.pubProductReservation + name,
+                            object.toString(), false);
+                }
             }
-            this.pnode.sendMessage("", "", false);
             System.out.println("Contacting shop with response: order "+ order.getOrderId() +"  ... [OK]");
         } catch (Exception ex) {
             System.out.println("Contacting shop with response: order "+ order.getOrderId() +"  ... [FAIL]");
-            System.err.println(ex.toString());
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
