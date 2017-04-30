@@ -240,7 +240,8 @@ public class Worker implements IMqttNode{
         Order order = new Order();
         order.setClientId(object.getInt("id"));
         order.setAccountNumber(object.getString("accountNumber"));
-        order.setMail(object.getString("mail"));
+        if(object.containsKey("mail"))
+            order.setMail(object.getString("mail"));
         order.setTopic(topic);
         Product product = new Product();
         product.setId(object.getInt("product"));
@@ -257,7 +258,8 @@ public class Worker implements IMqttNode{
         Order order = new Order();
         order.setClientId(object.getInt("id"));
         order.setAccountNumber(object.getString("accountNumber"));
-        order.setMail(object.getString("mail"));
+        if(object.containsKey("mail"))
+            order.setMail(object.getString("mail"));
         order.setTopic(topic);
         JsonArray array = object.getJsonArray("products");
         List<Product> products = order.getProducts();
@@ -413,7 +415,11 @@ public class Worker implements IMqttNode{
                 object.add("amount", rs.getString("amount"));
                 paymentDestinations.add(object);
             }
-            String bankId = order.getAccountNumber().substring(4, 8);
+            String bankId = "";
+            if(order.getAccountNumber().length() >= 8)
+                    bankId = order.getAccountNumber().substring(4, 8);
+            else
+                bankId = "0200";
             JsonObject object = factory.createObjectBuilder()
                     .add("paymentId", order.getUuid())
                     .add("bankId", bankId)
