@@ -430,7 +430,7 @@ public class Worker implements IMqttNode{
                     .add("paymentDestinations", paymentDestinations)
                     .build();
             
-            this.pnode.sendMessage("/bank/" + bankId + "/payment_orders", object.toString(), false);
+            this.pnode.sendMessage("/bank/payment_orders/" + bankId, object.toString(), false);
             System.out.println("Send payment to bank, order "+ order.getOrderId() +"  ... [OK]");
         } catch (MqttException | SQLException ex) {
             System.out.println("Send payment to bank, order "+ order.getOrderId() +"  ... [FAIL]");
