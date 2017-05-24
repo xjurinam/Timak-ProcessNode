@@ -483,7 +483,7 @@ public class Worker implements IMqttNode{
     
     public void updateDatabaseSuccess(Order order){
         try (Statement stmt = this.connection.createStatement()){
-            String sql = "UPDATE Node.orders SET success='1' WHERE id_order=" + order.getOrderId() + ";";
+            String sql = "UPDATE orders SET success='1' WHERE id_order=" + order.getOrderId() + "; ";
             stmt.executeUpdate(sql);
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
