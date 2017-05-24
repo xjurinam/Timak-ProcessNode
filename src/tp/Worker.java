@@ -217,7 +217,7 @@ public class Worker implements IMqttNode{
             JsonArrayBuilder builder = Json.createArrayBuilder();
             while(rs.next()){
                 JsonObjectBuilder object = Json.createObjectBuilder();
-                object.add("id", rs.getString("product_id"));
+                object.add("id", rs.getString("id_product"));
                 object.add("name", rs.getString("name"));
                 object.add("price", rs.getString("price"));
                 object.add("available", rs.getString("amount"));
