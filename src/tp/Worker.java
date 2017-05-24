@@ -7,6 +7,7 @@ package tp;
 
 import java.io.StringReader;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -469,11 +470,23 @@ public class Worker implements IMqttNode{
             System.out.println("Received payment from bank, order "+ order2.getOrderId() +"  ... [OK]");
             contactUserWithResponse("Payment "+status, success, order2);
             contactShopWithResponse("Payment "+status, success, order2);
+            if(success == 1)
+                updateDatabaseSuccess(order2);
             synchronized(this) {
                 this.orders.remove(order2);
             }
         }catch(Exception ex){
             System.out.println("Received payment from bank, order "+ order2.getOrderId() +"  ... [FAIL]");
+            Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void updateDatabaseSuccess(Order order){
+        try (Statement stmt = this.connection.createStatement()){
+            String sql = "UPDATE Node.orders SET success='1' WHERE id_order=" + order.getOrderId() + ";";
+            stmt.executeUpdate(sql);
+        } catch (SQLException ex) {
+            System.err.println(ex.getMessage());
             Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -558,7 +571,7 @@ public class Worker implements IMqttNode{
                     + "INNER JOIN products as p ON op.id_product=p.id_product "
                     + "INNER JOIN merchants as m ON m.id_shop=p.id_shop "
                     + "INNER JOIN orders as o ON op.id_order=o.id_order "
-                    + "WHERE o.username=\"" + username + "\" "
+                    + "WHERE o.username=\"" + username + "\" AND o.success=1 "
                     + "ORDER BY date DESC "
                     + "LIMIT " + i + ";";
             JsonArrayBuilder builder = Json.createArrayBuilder();
@@ -580,5 +593,17 @@ public class Worker implements IMqttNode{
             System.out.println("Sending history to " + username + "  ... [FAIL]");
             logger.log(Level.SEVERE, ex.toString());
         }
+    }
+    
+    public Statement checkConnection() {
+        try {
+            Statement stmt = connection.createStatement();
+            return stmt;
+        } catch (SQLException ex) {
+            //this.connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/broker_node?useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&useUnicode=yes", "node", "mysql");
+            //connection.setSchema("Node");
+            //Logger.getLogger(Worker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

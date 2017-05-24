@@ -36,7 +36,8 @@ public class Main {
             logger.addHandler(fh);
             // Pripojenie do databazy
             //Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/Node", "node", "mysql");
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/broker_node", "node", "mysql");
+            // ?useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&useUnicode=yes
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/broker_node?useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&useUnicode=yes", "node", "mysql");
             connection.setSchema("Node");
             // DOCASNE NASTAVOVANIE DATABAZY TREBA NESKOR OPRAVIT
             Statement stmt = connection.createStatement();
