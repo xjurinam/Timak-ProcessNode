@@ -450,15 +450,28 @@ public class Worker implements IMqttNode{
             */
             JsonReader reader = Json.createReader(new StringReader(json));
             JsonObject object = reader.readObject();
-            String paymentId = object.getString("paymentId");
-            String status = object.getString("status");
+            
+            String paymentId;
+            String status;
+            String message = "";
+            int success = 0;
+            if(!object.containsKey("status")){
+                paymentId = object.getString("orderId");
+                status = "";
+                message = object.getString("message");
+                success = object.getInt("success");
+            }
+            else{
+                paymentId = object.getString("paymentId");
+                status = object.getString("status");
+                if(status.equals("received"))
+                    success = 1;
+            }
             if(status.equals("pending")){
                 System.out.println("Bank response pending!");
                 return;
             }
-            int success = 0;
-            if(status.equals("received"))
-                success = 1;
+            
             synchronized(this) {
                 for(Order order : orders){
                     if(order.getUuid().equals(paymentId)){
@@ -468,8 +481,8 @@ public class Worker implements IMqttNode{
                 }
             }
             System.out.println("Received payment from bank, order "+ order2.getOrderId() +"  ... [OK]");
-            contactUserWithResponse("Payment "+status, success, order2);
-            contactShopWithResponse("Payment "+status, success, order2);
+            contactUserWithResponse("Payment "+status + message, success, order2);
+            contactShopWithResponse("Payment "+status + message, success, order2);
             if(success == 1)
                 updateDatabaseSuccess(order2);
             synchronized(this) {
