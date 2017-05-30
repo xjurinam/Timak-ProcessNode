@@ -484,7 +484,9 @@ public class Worker implements IMqttNode{
             contactUserWithResponse("Payment "+status + message, success, order2);
             contactShopWithResponse("Payment "+status + message, success, order2);
             if(success == 1)
-                updateDatabaseSuccess(order2);
+                updateDatabaseSuccess(order2, success);
+            else
+                updateDatabaseSuccess(order2, success);
             synchronized(this) {
                 this.orders.remove(order2);
             }
@@ -494,9 +496,10 @@ public class Worker implements IMqttNode{
         }
     }
     
-    public void updateDatabaseSuccess(Order order){
+    public void updateDatabaseSuccess(Order order, int success){
         try (Statement stmt = this.connection.createStatement()){
-            String sql = "UPDATE orders SET success='1' WHERE id_order=" + order.getOrderId() + "; ";
+            String sql = "UPDATE orders SET success='" + success
+                    + "' WHERE id_order=" + order.getOrderId() + "; ";
             stmt.executeUpdate(sql);
         } catch (SQLException ex) {
             System.err.println(ex.getMessage());
